@@ -36,31 +36,50 @@ class App extends Component {
     this.state = { 
       input :'',
       imageUrl :'',
-      box:{}
+      box:[]
     }
   }
 
   calculateFaceLocation = (data) => {
 
-    console.log(data);
-   const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box; 
+    const image = document.getElementById('inputImage');
+    const height = Number(image.height);
+    const width = Number(image.width);
 
-   const image = document.getElementById('inputImage');
-   const height = Number(image.height);
-   const width = Number(image.width);
+    const faces = data.outputs[0].data.regions;
+    
 
-   return{
-     leftCol : clarifaiFace.left_col * width,
-     topRow : clarifaiFace.top_row * height,
-     rightCol : width - (clarifaiFace.right_col * width), 
-     bottomRow : height - (clarifaiFace.bottom_row * height)
-     
-   }
+    return  (
+      faces.map((face,i)=>{
+        return(
+          {
+            leftCol : faces[i].region_info.bounding_box.left_col * width,
+            topRow :  faces[i].region_info.bounding_box.top_row * height,
+            rightCol : width - ( faces[i].region_info.bounding_box.right_col * width), 
+            bottomRow : height - ( faces[i].region_info.bounding_box.bottom_row * height)
+            
+          }
+        );
+      })
+    )
+
+    
+    //const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box; 
+
+ 
+
+  //  return{
+  //    leftCol : clarifaiFace.left_col * width,
+  //    topRow : clarifaiFace.top_row * height,
+  //    rightCol : width - (clarifaiFace.right_col * width), 
+  //    bottomRow : height - (clarifaiFace.bottom_row * height)
+
+  //  }
 
   }
 
   displayFaceBox = (box) => {
-    console.log(box);
+    
     this.setState({box : box})
   }
   onInputChange = (event) => {
@@ -73,8 +92,10 @@ class App extends Component {
    this.setState({imageUrl:this.state.input});
    
     app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input).then(
-      response => {this.displayFaceBox(this.calculateFaceLocation(response))})
+      response => {this.displayFaceBox(this.calculateFaceLocation(response));})
       .catch(err => console.log(err));
+
+
   } 
   render() {
     return (
@@ -84,7 +105,10 @@ class App extends Component {
         <Logo/>
         <Rank/>
         <ImageLinkForm onInputChange = {this.onInputChange} onButtonSubmit = {this.onButtonSubmit} />
-        <FaceRecognition image={this.state.imageUrl} box = {this.state.box}/>
+        <FaceRecognition image={this.state.imageUrl} box = {this.state.box}
+
+         
+        />
       </div>
     );
   }
